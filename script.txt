@@ -3,18 +3,18 @@ PRAGMA foreign_keys = ON;
  * DataBase Tables Creation
  */
 
-CREATE TABLE Universidad (
+CREATE TABLE UNIVERSIDAD (
     IdUniversidad         INTEGER PRIMARY KEY AUTOINCREMENT,
     Nombre                VARCHAR(40),
     IdCalificacion        INTEGER,
     CONSTRAINT fk_calificacion FOREIGN KEY (IdCalificacion) REFERENCES Calificacion(IdCalificacion));
 
-CREATE TABLE Calificacion (
+CREATE TABLE CALIFICACION (
     IdCalificacion        INTEGER PRIMARY KEY AUTOINCREMENT,
     UpVotes               INTEGER,
     DownVotes             INTEGER);
 
-CREATE TABLE Sede (
+CREATE TABLE SEDE (
     IdSede                INTEGER PRIMARY KEY AUTOINCREMENT,
     Nombre                VARCHAR(20),
     IdCalificacion        INTEGER,
@@ -24,7 +24,7 @@ CREATE TABLE Sede (
     CONSTRAINT fk_ubucacion FOREIGN KEY (IdUbicacion) REFERENCES Ubicacion(IdUbicacion),
     CONSTRAINT fk_calificacion FOREIGN KEY (IdCalificacion) REFERENCES Calificacion(IdCalificacion));
 
-CREATE TABLE Ubicacion (
+CREATE TABLE UBICACION (
     IdUbicacion           INTEGER PRIMARY KEY AUTOINCREMENT,
     Pais                  VARCHAR(15),
     Provincia             VARCHAR(15),
@@ -32,7 +32,7 @@ CREATE TABLE Ubicacion (
     Calle                 VARCHAR(20),
     Direccion             VARCHAR(50));
 
-CREATE TABLE Estudiante (
+CREATE TABLE ESTUDIANTE (
     IdEstudiante          INTEGER PRIMARY KEY AUTOINCREMENT,
     IdUniversidad         INTEGER,
     Carrera               VARCHAR(40),
@@ -43,7 +43,7 @@ CREATE TABLE Estudiante (
     CONSTRAINT fk_universidad FOREIGN KEY (IdUniversidad) REFERENCES Universidad(IdUniversidad),
     CONSTRAINT fk_ubucacion FOREIGN KEY (LugarNacimiento) REFERENCES Ubicacion(IdUbicacion));
 
-CREATE TABLE Restaurante (
+CREATE TABLE RESTAURANTE (
     IdRestaurante         INTEGER PRIMARY KEY AUTOINCREMENT,
     Nombre                VARCHAR(30),
     Horario               VARCHAR(11),
@@ -52,14 +52,14 @@ CREATE TABLE Restaurante (
     CONSTRAINT fk_sede FOREIGN KEY (IdSede) REFERENCES Sede(IdSede),
     CONSTRAINT fk_calificacion FOREIGN KEY (IdCalificacion) REFERENCES Calificacion(IdCalificacion));
 
-CREATE TABLE Menu (
+CREATE TABLE MENU (
     IdMenu                INTEGER PRIMARY KEY AUTOINCREMENT,
     IdRestaurante         INTEGER,
     Horario               TIME,
     Fecha                 DATE,
     CONSTRAINT fk_restaurante FOREIGN KEY (IdRestaurante) REFERENCES Restaurante(IdRestaurante));
 
-CREATE TABLE Platillo (
+CREATE TABLE PLATILLO (
     IdPlatillo            INTEGER PRIMARY KEY AUTOINCREMENT,
     Nombre                VARCHAR(25),
     Precio                INTEGER,
@@ -68,13 +68,13 @@ CREATE TABLE Platillo (
     CONSTRAINT fk_calificacion FOREIGN KEY (IdCalificacion) REFERENCES Calificacion(IdCalificacion),
     CONSTRAINT fk_menu FOREIGN KEY (IdMenu) REFERENCES Menu(IdMenu));
 
-CREATE TABLE Voto (
+CREATE TABLE VOTO (
     IdVoto                INTEGER PRIMARY KEY AUTOINCREMENT,
     Hora                  TIME,
     Fecha                 DATE,
     Calificacion          INTEGER);
 
-CREATE TABLE VotoxUniversidad(
+CREATE TABLE VOTOXUNIVERSIDAD(
     IdUniversidad         INTEGER,
     IdEstudiante          INTEGER,
     IdVoto                INTEGER,
@@ -82,7 +82,7 @@ CREATE TABLE VotoxUniversidad(
     CONSTRAINT fk_estudiante FOREIGN KEY (IdEstudiante) REFERENCES Estudiante(IdEstudiante),
     CONSTRAINT fk_voto FOREIGN KEY (IdVoto) REFERENCES Voto(IdVoto));
 
-CREATE TABLE VotoxRestaurante(
+CREATE TABLE VOTOXRESTAURANTE(
     IdUniversidad         INTEGER,
     IdRestaurante         INTEGER,
     IdEstudiante          INTEGER,
@@ -92,7 +92,7 @@ CREATE TABLE VotoxRestaurante(
     CONSTRAINT fk_estudiante FOREIGN KEY (IdEstudiante) REFERENCES Estudiante(IdEstudiante),
     CONSTRAINT fk_voto FOREIGN KEY (IdVoto) REFERENCES Voto(IdVoto));
 
-CREATE TABLE VotoxPlatillo(
+CREATE TABLE VOTOXPLATILLO(
     IdUniversidad         INTEGER,
     IdRestaurante         INTEGER,
     IdPlatillo            INTEGER,
@@ -104,13 +104,13 @@ CREATE TABLE VotoxPlatillo(
     CONSTRAINT fk_estudiante FOREIGN KEY (IdEstudiante) REFERENCES Estudiante(IdEstudiante),
     CONSTRAINT fk_voto FOREIGN KEY (IdVoto) REFERENCES Voto(IdVoto));
 
-CREATE TABLE RestaurantexPlatillo(
+CREATE TABLE RESTAURANTEXPLATILLO(
     IdRestaurante         INTEGER,
     IdPlatillo            INTEGER,
     CONSTRAINT fk_restaurante FOREIGN KEY (IdRestaurante) REFERENCES Restaurante(IdRestaurante),
     CONSTRAINT fk_platillo FOREIGN KEY (IdPlatillo) REFERENCES Platillo(IdPlatillo));
 
-CREATE TABLE MenuxPlatillo(
+CREATE TABLE MENUXPLATILLO(
     IdMenu                INTEGER,
     IdPlatillo            INTEGER,
     CONSTRAINT fk_menu FOREIGN KEY (IdMenu) REFERENCES Menu(IdMenu),
@@ -181,3 +181,11 @@ Nombre VARCHAR(25),
     Precio INTEGER,
     IdCalificacion INTEGER,
     IdMenu INTEGER,
+
+--Se calcula la frecuencia de cada carrera por restaurante
+SELECT IdVoto ,  Fecha, COUNT(VOTOXRESTAURANTE), Carrera, Nombre
+FROM VOTO v, VOTOXRESTAURANTE vxe, ESTUDIANTE e, RESTAURANTE r, sys.tables,
+INNER JOIN vxe  ON vxe.IdVoto = v.IdVoto                AND
+           e    ON e.IdEstudiante = vxe.IdEstudiante    AND
+           r    ON r.IdRestaurante = vxe.IdRestaurante
+WHERE fecha <= CURRENT DATE
