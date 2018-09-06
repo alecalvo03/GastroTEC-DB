@@ -177,10 +177,10 @@ VALUES ('Pinto',200),
     ('Fresco',150),
     ('Cafe',100),
     ('Repostería',300);
-    
+
 Insert INTO MENUXPLATILLO(IdMenu, IdPlatillo)
 VALUES
-    --Desayuno 
+    --Desayuno
     (1,1),(1,2),
     (2,1),(2,3),
     (3,1),(3,4),
@@ -200,7 +200,7 @@ VALUES
     (16,5),(16,6),(16,10),(16,7),
     (17,5),(17,6),(17,10),(17,8),
     (18,5),(18,6),(18,10),(18,9);
-    
+
 INSERT INTO VOTO (Hora, Fecha, Calificacion)
 VALUES ('8:30','2018-07-04',1),
     ('8:45','2018-07-04',0),
@@ -212,7 +212,7 @@ VALUES ('8:30','2018-07-04',1),
     ('11:20','2018-08-05',1),
     ('11:45','2018-08-05',1),
     ('12:00','2018-08-05',1);
-    
+
 INSERT INTO VOTOXPLATILLO (IdUniversidad, IdRestaurante, IdPlatillo, IdEstudiante, IdVoto)
 VALUES (1,1,1,1,1),
     (1,1,1,2,2),
@@ -224,7 +224,16 @@ VALUES (1,1,1,1,1),
     (1,1,8,1,8),
     (1,1,8,2,9),
     (1,1,8,3,10);
-    
+
+
+
+
+--Get RATING
+SELECT RESTAURANTE.Nombre, CALIFICACION.UpVotes, CALIFICACION.DownVotes
+FROM CALIFICACION
+INNER JOIN RESTAURANTE ON CALIFICACION.IdCalificacion = RESTAURANTE.IdCalificacion
+GROUP BY RESTAURANTE.Nombre;
+
 --Se calcula la frecuencia de cada carrera por restaurante
 SELECT VISITXCARRERA.Carrera AS Carrera, VISITXCARRERA.Restaurante AS Restaurante, MAX(VISITXCARRERA.VISITS) VISITS
 FROM (
@@ -233,8 +242,20 @@ FROM (
   INNER JOIN VOTO ON VOTOXPLATILLO.IdVoto = VOTO.IdVoto
   INNER JOIN ESTUDIANTE ON VOTOXPLATILLO.IdEstudiante = ESTUDIANTE.IdEstudiante
   INNER JOIN RESTAURANTE ON VOTOXPLATILLO.IdRestaurante = RESTAURANTE.IdRestaurante
-  
+
   GROUP BY Carrera, Restaurante
 ) AS VISITXCARRERA
-GROUP BY VISITXCARRERA.RESTAURANTE;
+GROUP BY VISITXCARRERA.Restaurante;
 
+--Estudiante más participativo
+SELECT VISITXESTUDIANTE.Nombre, VISITXESTUDIANTE.Restaurante, MAX(VISITXESTUDIANTE.VISITS) VISITS
+FROM (
+  SELECT ESTUDIANTE.Nombre AS Nombre, RESTAURANTE.Nombre AS Restaurante, COUNT(ESTUDIANTE.Nombre) VISITS
+  FROM VOTOXPLATILLO
+  INNER JOIN VOTO ON VOTOXPLATILLO.IdVoto = VOTO.IdVoto
+  INNER JOIN ESTUDIANTE ON VOTOXPLATILLO.IdEstudiante = ESTUDIANTE.IdEstudiante
+  INNER JOIN RESTAURANTE ON VOTOXPLATILLO.IdRestaurante = RESTAURANTE.IdRestaurante
+
+  GROUP BY ESTUDIANTE.Nombre, Restaurante
+) AS VISITXESTUDIANTE
+GROUP BY VISITXESTUDIANTE.Restaurante;
