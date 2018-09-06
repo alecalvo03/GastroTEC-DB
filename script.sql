@@ -248,6 +248,54 @@ FROM (
   GROUP BY PLATILLO.Nombre
 ) AS VOTOXPLATO;
 
+
+--Platillo mas gustado por semana
+SELECT VOTOXPLATO.Nombre, VOTOXPLATO.Week, MAX(VOTOXPLATO.Visits) Visits
+FROM (
+  SELECT PLATILLO.Nombre, strftime('%W',VOTO.Fecha) Week, COUNT(strftime('%W',VOTO.Fecha)) Visits
+  FROM VOTOXPLATILLO
+      INNER JOIN VOTO ON VOTOXPLATILLO.IdVoto = VOTO.IdVoto
+      INNER JOIN PLATILLO ON VOTOXPLATILLO.IdPlatillo = PLATILLO.IdPlatillo
+  GROUP BY PLATILLO.Nombre, week
+) AS VOTOXPLATO
+GROUP BY VOTOXPLATO.Week;
+
+--Platillo menos gustado por semana
+SELECT VOTOXPLATO.Nombre, VOTOXPLATO.Week, MIN(VOTOXPLATO.Visits) Visits
+FROM (
+  SELECT PLATILLO.Nombre, strftime('%W',VOTO.Fecha) Week, COUNT(strftime('%W',VOTO.Fecha)) Visits
+  FROM VOTOXPLATILLO
+      INNER JOIN VOTO ON VOTOXPLATILLO.IdVoto = VOTO.IdVoto
+      INNER JOIN PLATILLO ON VOTOXPLATILLO.IdPlatillo = PLATILLO.IdPlatillo
+  GROUP BY PLATILLO.Nombre, week
+) AS VOTOXPLATO
+GROUP BY VOTOXPLATO.Week;
+
+--Platillo mas gustado por dia
+SELECT VOTOXPLATO.Nombre, VOTOXPLATO.Fecha, MAX(VOTOXPLATO.Visits) Visits
+FROM (
+  SELECT PLATILLO.Nombre, Voto.Fecha Fecha, COUNT(VOTO.Fecha) Visits
+  FROM VOTOXPLATILLO
+      INNER JOIN VOTO ON VOTOXPLATILLO.IdVoto = VOTO.IdVoto
+      INNER JOIN PLATILLO ON VOTOXPLATILLO.IdPlatillo = PLATILLO.IdPlatillo
+  GROUP BY PLATILLO.Nombre, VOTO.Fecha
+) AS VOTOXPLATO
+GROUP BY VOTOXPLATO.Fecha;
+
+--Platillo menos gustado por dia
+SELECT VOTOXPLATO.Nombre, VOTOXPLATO.Fecha, MIN(VOTOXPLATO.Visits) Visits
+FROM (
+  SELECT PLATILLO.Nombre, VOTO.Fecha Fecha, COUNT(VOTO.Fecha) Visits
+  FROM VOTOXPLATILLO
+      INNER JOIN VOTO ON VOTOXPLATILLO.IdVoto = VOTO.IdVoto
+      INNER JOIN PLATILLO ON VOTOXPLATILLO.IdPlatillo = PLATILLO.IdPlatillo
+  GROUP BY PLATILLO.Nombre, Fecha
+) AS VOTOXPLATO
+GROUP BY VOTOXPLATO.Fecha;
+
+SELECT VOTO.Fecha, strftime('%W',VOTO.Fecha) Week
+    FROM VOTO;
+
 --Horario mas frecuentado
 SELECT VOTOXPLATO.Horario, MAX(VOTOXPLATO.Visits) Visits
 FROM (
