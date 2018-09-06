@@ -93,11 +93,13 @@ CREATE TABLE VOTOXRESTAURANTE(
 CREATE TABLE VOTOXPLATILLO(
     IdUniversidad         INTEGER,
     IdRestaurante         INTEGER,
+    IdMenu                 INTEGER,
     IdPlatillo            INTEGER,
     IdEstudiante          INTEGER,
     IdVoto                INTEGER,
     CONSTRAINT fk_universidad FOREIGN KEY (IdUniversidad) REFERENCES UNIVERSIDAD(IdUniversidad),
     CONSTRAINT fk_restaurante FOREIGN KEY (IdRestaurante) REFERENCES RESTAURANTE(IdRestaurante),
+    CONSTRAINT fk_menu FOREIGN KEY (IdMenu) REFERENCES MENU(IdMenu),
     CONSTRAINT fk_platillo FOREIGN KEY (IdPlatillo) REFERENCES PLATILLO(IdPlatillo),
     CONSTRAINT fk_estudiante FOREIGN KEY (IdEstudiante) REFERENCES ESTUDIANTE(IdEstudiante),
     CONSTRAINT fk_voto FOREIGN KEY (IdVoto) REFERENCES VOTO(IdVoto));
@@ -213,18 +215,50 @@ VALUES ('8:30','2018-07-04',1),
     ('11:45','2018-08-05',1),
     ('12:00','2018-08-05',1);
     
-INSERT INTO VOTOXPLATILLO (IdUniversidad, IdRestaurante, IdPlatillo, IdEstudiante, IdVoto)
-VALUES (1,1,1,1,1),
-    (1,1,1,2,2),
-    (1,1,1,1,3),
-    (1,1,2,1,4),
-    (1,1,1,1,5),
-    (1,1,1,3,6),
-    (1,1,1,1,7),
-    (1,1,8,1,8),
-    (1,1,8,2,9),
-    (1,1,8,3,10);
+INSERT INTO VOTOXPLATILLO (IdUniversidad, IdRestaurante, IdMenu, IdPlatillo, IdEstudiante, IdVoto)
+VALUES (1,1,1,1,1,1),
+    (1,1,2,1,2,2),
+    (1,1,3,1,1,3),
+    (1,1,4,2,1,4),
+    (1,1,5,1,1,5),
+    (1,1,6,1,3,6),
+    (1,1,7,1,1,7),
+    (1,1,10,8,1,8),
+    (1,1,11,8,2,9),
+    (1,1,12,8,3,10);
     
+
+--Platillo mas gustado de todos
+SELECT VOTOXPLATO.Nombre, MAX(VOTOXPLATO.Visits) Visits
+FROM (
+  SELECT PLATILLO.Nombre, COUNT(PLATILLO.Nombre) Visits
+  FROM VOTOXPLATILLO
+      INNER JOIN VOTO ON VOTOXPLATILLO.IdVoto = VOTO.IdVoto
+      INNER JOIN PLATILLO ON VOTOXPLATILLO.IdPlatillo = PLATILLO.IdPlatillo
+  GROUP BY PLATILLO.Nombre
+) AS VOTOXPLATO;
+
+--Platillo menos gustado de todos
+SELECT VOTOXPLATO.Nombre, MIN(VOTOXPLATO.Visits) Visits
+FROM (
+  SELECT PLATILLO.Nombre, COUNT(PLATILLO.Nombre) Visits
+  FROM VOTOXPLATILLO
+      INNER JOIN VOTO ON VOTOXPLATILLO.IdVoto = VOTO.IdVoto
+      INNER JOIN PLATILLO ON VOTOXPLATILLO.IdPlatillo = PLATILLO.IdPlatillo
+  GROUP BY PLATILLO.Nombre
+) AS VOTOXPLATO;
+
+--Horario mas frecuentado
+SELECT VOTOXPLATO.Horario, MAX(VOTOXPLATO.Visits) Visits
+FROM (
+  SELECT PLATILLO.IdPlatillo AS IdPlato, Menu.Horario, COUNT(MENU.Horario) Visits
+  FROM VOTOXPLATILLO
+      INNER JOIN VOTO ON VOTOXPLATILLO.IdVoto = VOTO.IdVoto
+      INNER JOIN PLATILLO ON VOTOXPLATILLO.IdPlatillo = PLATILLO.IdPlatillo
+      INNER JOIN MENU ON VOTOXPLATILLO.IdMenu = MENU.IdMenu
+  GROUP BY MENU.Horario
+) AS VOTOXPLATO;
+
 --Se calcula la frecuencia de cada carrera por restaurante
 SELECT VISITXCARRERA.Carrera AS Carrera, VISITXCARRERA.Restaurante AS Restaurante, MAX(VISITXCARRERA.VISITS) VISITS
 FROM (
@@ -236,5 +270,18 @@ FROM (
   
   GROUP BY Carrera, Restaurante
 ) AS VISITXCARRERA
-GROUP BY VISITXCARRERA.RESTAURANTE;
+GROUP BY VISITXCARRERA.Restaurante;
+
+--Estudiante más participativo
+SELECT VISITXESTUDIANTE.Nombre, VISITXESTUDIANTE.Restaurante, MAX(VISITXESTUDIANTE.VISITS) VISITS
+FROM (
+  SELECT ESTUDIANTE.Nombre AS Nombre, RESTAURANTE.Nombre AS Restaurante, COUNT(ESTUDIANTE.Nombre) VISITS
+  FROM VOTOXPLATILLO
+  INNER JOIN VOTO ON VOTOXPLATILLO.IdVoto = VOTO.IdVoto
+  INNER JOIN ESTUDIANTE ON VOTOXPLATILLO.IdEstudiante = ESTUDIANTE.IdEstudiante
+  INNER JOIN RESTAURANTE ON VOTOXPLATILLO.IdRestaurante = RESTAURANTE.IdRestaurante
+  
+  GROUP BY ESTUDIANTE.Nombre, Restaurante
+) AS VISITXESTUDIANTE
+GROUP BY VISITXESTUDIANTE.Restaurante;
 
