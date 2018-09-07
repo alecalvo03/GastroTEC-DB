@@ -179,10 +179,10 @@ VALUES ('Pinto',200),
     ('Fresco',150),
     ('Cafe',100),
     ('Repostería',300);
-    
+
 Insert INTO MENUXPLATILLO(IdMenu, IdPlatillo)
 VALUES
-    --Desayuno 
+    --Desayuno
     (1,1),(1,2),
     (2,1),(2,3),
     (3,1),(3,4),
@@ -202,9 +202,12 @@ VALUES
     (16,5),(16,6),(16,10),(16,7),
     (17,5),(17,6),(17,10),(17,8),
     (18,5),(18,6),(18,10),(18,9);
-    
+
 INSERT INTO VOTO (Hora, Fecha, Calificacion)
-VALUES ('8:30','2018-07-04',1),
+VALUES ('8:30','2018-01-04',1),
+    ('8:30','2018-02-04',1),
+    ('8:30','2018-03-04',1),
+    ('8:30','2018-07-04',1),
     ('8:45','2018-07-04',0),
     ('9:20','2018-07-04',1),
     ('9:32','2018-07-04',1),
@@ -214,19 +217,21 @@ VALUES ('8:30','2018-07-04',1),
     ('11:20','2018-08-05',1),
     ('11:45','2018-08-05',1),
     ('12:00','2018-08-05',1);
-    
+
 INSERT INTO VOTOXPLATILLO (IdUniversidad, IdRestaurante, IdMenu, IdPlatillo, IdEstudiante, IdVoto)
-VALUES (1,1,1,1,1,1),
-    (1,1,2,1,2,2),
-    (1,1,3,1,1,3),
-    (1,1,4,2,1,4),
-    (1,1,5,1,1,5),
-    (1,1,6,1,3,6),
-    (1,1,7,1,1,7),
-    (1,1,10,8,1,8),
-    (1,1,11,8,2,9),
-    (1,1,12,8,3,10);
-    
+VALUES (1,1,1,1,2,1),
+    (1,1,1,1,2,2),
+    (1,1,1,1,2,3),
+    (1,1,2,1,2,4),
+    (1,1,3,1,1,5),
+    (1,1,4,2,1,6),
+    (1,1,5,1,1,7),
+    (1,1,6,1,3,8),
+    (1,1,7,1,1,9),
+    (1,1,10,8,1,10),
+    (1,1,11,8,2,11),
+    (1,1,12,8,3,12);
+
 
 --Platillo mas gustado de todos
 SELECT VOTOXPLATO.Nombre, MAX(VOTOXPLATO.Visits) Visits
@@ -248,6 +253,34 @@ FROM (
   GROUP BY PLATILLO.Nombre
 ) AS VOTOXPLATO;
 
+--Platillo mas gustado por semestre
+SELECT VOTOXPLATO.Nombre, VOTOXPLATO.Month, MAX(VOTOXPLATO.Visits) Visits
+FROM (
+  SELECT PLATILLO.Nombre, COUNT(strftime('%m',VOTO.Fecha)) Visits,
+  CASE
+     WHEN strftime('%m',VOTO.Fecha) > '06' THEN 'S2'
+     ELSE 'S1' END Month
+  FROM VOTOXPLATILLO
+      INNER JOIN VOTO ON VOTOXPLATILLO.IdVoto = VOTO.IdVoto
+      INNER JOIN PLATILLO ON VOTOXPLATILLO.IdPlatillo = PLATILLO.IdPlatillo
+  GROUP BY PLATILLO.Nombre, Month
+) AS VOTOXPLATO
+GROUP BY VOTOXPLATO.Month
+
+
+--Platillo menos gustado por semestre
+SELECT VOTOXPLATO.Nombre, VOTOXPLATO.Month, min(VOTOXPLATO.Visits) Visits
+FROM (
+  SELECT PLATILLO.Nombre, COUNT(strftime('%m',VOTO.Fecha)) Visits,
+  CASE
+     WHEN strftime('%m',VOTO.Fecha) > '06' THEN 'S2'
+     ELSE 'S1' END Month
+  FROM VOTOXPLATILLO
+      INNER JOIN VOTO ON VOTOXPLATILLO.IdVoto = VOTO.IdVoto
+      INNER JOIN PLATILLO ON VOTOXPLATILLO.IdPlatillo = PLATILLO.IdPlatillo
+  GROUP BY PLATILLO.Nombre, Month
+) AS VOTOXPLATO
+GROUP BY VOTOXPLATO.Month
 
 --Platillo mas gustado por semana
 SELECT VOTOXPLATO.Nombre, VOTOXPLATO.Week, MAX(VOTOXPLATO.Visits) Visits
@@ -293,9 +326,6 @@ FROM (
 ) AS VOTOXPLATO
 GROUP BY VOTOXPLATO.Fecha;
 
-SELECT VOTO.Fecha, strftime('%W',VOTO.Fecha) Week
-    FROM VOTO;
-
 --Horario mas frecuentado
 SELECT VOTOXPLATO.Horario, MAX(VOTOXPLATO.Visits) Visits
 FROM (
@@ -315,7 +345,7 @@ FROM (
   INNER JOIN VOTO ON VOTOXPLATILLO.IdVoto = VOTO.IdVoto
   INNER JOIN ESTUDIANTE ON VOTOXPLATILLO.IdEstudiante = ESTUDIANTE.IdEstudiante
   INNER JOIN RESTAURANTE ON VOTOXPLATILLO.IdRestaurante = RESTAURANTE.IdRestaurante
-  
+
   GROUP BY Carrera, Restaurante
 ) AS VISITXCARRERA
 GROUP BY VISITXCARRERA.Restaurante;
@@ -328,8 +358,7 @@ FROM (
   INNER JOIN VOTO ON VOTOXPLATILLO.IdVoto = VOTO.IdVoto
   INNER JOIN ESTUDIANTE ON VOTOXPLATILLO.IdEstudiante = ESTUDIANTE.IdEstudiante
   INNER JOIN RESTAURANTE ON VOTOXPLATILLO.IdRestaurante = RESTAURANTE.IdRestaurante
-  
+
   GROUP BY ESTUDIANTE.Nombre, Restaurante
 ) AS VISITXESTUDIANTE
 GROUP BY VISITXESTUDIANTE.Restaurante;
-

@@ -1,8 +1,6 @@
 PRAGMA foreign_keys = ON;
-/*
- * DataBase Tables Creation
- */
 
+---------------------------------- DataBase Tables Creation-------------------------------------------
 CREATE TABLE UNIVERSIDAD (
     IdUniversidad         INTEGER PRIMARY KEY AUTOINCREMENT,
     Nombre                VARCHAR(40),
@@ -111,10 +109,14 @@ CREATE TABLE RESTAURANTEXPLATILLO(
 CREATE TABLE MENUXPLATILLO(
     IdMenu                INTEGER,
     IdPlatillo            INTEGER,
-    CONSTRAINT fk_menu FOREIGN KEY (IdMenu) REFERENCES MENU(IdMenu),
+    CONSTRAINT fk_menu FOREIGN KEY  REFERENCES MENU(IdMenu),
     CONSTRAINT fk_platillo FOREIGN KEY (IdPlatillo) REFERENCES PLATILLO(IdPlatillo));
+------------------------------- End of the DataBase Tables Creation-------------------------------
 
 
+
+
+----------------------------------- Insertion section----------------------------------------
 INSERT INTO UNIVERSIDAD (Nombre)
 VALUES ('TEC');
 
@@ -225,10 +227,11 @@ VALUES (1,1,1,1,1),
     (1,1,8,2,9),
     (1,1,8,3,10);
 
+----------------------------------- End of the insertion section----------------------------------------
 
 
 
---Get RATING
+--Calificación de un restaurante
 SELECT RESTAURANTE.Nombre, CALIFICACION.UpVotes, CALIFICACION.DownVotes
 FROM CALIFICACION
 INNER JOIN RESTAURANTE ON CALIFICACION.IdCalificacion = RESTAURANTE.IdCalificacion
